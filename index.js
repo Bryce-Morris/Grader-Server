@@ -23,7 +23,7 @@ http.createServer( function(req, res) {
     {
         console.log("GET");
         //var html = '<html><body><form method="post" action="http://localhost:3000">Name: <input type="text" name="name" /><input type="submit" value="Submit" /></form></body>';
-        var html = fs.readFileSync('index.html');
+        var html = fs.readFileSync('page.html');
         res.writeHead(200, {'Content-Type': 'text/html'});
         res.end(html);
     }
