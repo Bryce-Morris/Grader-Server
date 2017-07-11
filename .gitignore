@@ -2,8 +2,6 @@
 images/
 node_modules/
 obj/
-bubble_sheet.png
-bubble_sheet_r2.png
 checkAllImages.bat
 Script1.js
 Grader-Server.njsproj
