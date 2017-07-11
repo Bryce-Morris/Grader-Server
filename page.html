@@ -1,6 +1,6 @@
 <html>
 <body>
-    <form method="post" action="http://localhost:3000">
+    <form method="post" action="http://localhost:3000"+process.env.PORT>
         Name: <input type="text" name="name" />
         <input type="submit" value="Submit" />
     </form>
@@ -9,7 +9,7 @@
         console.log('begin');
         var http = new XMLHttpRequest();
         var params = "text=stuff";
-        http.open("POST", "http://localhost:3000", true);
+        http.open("POST", "http://localhost:"+process.env.PORT, true);
 
         http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         //http.setRequestHeader("Content-length", params.length);
