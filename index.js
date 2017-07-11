@@ -30,7 +30,7 @@ http.createServer(function (request, response) {
         case '.wav':
             contentType = 'audio/wav';
             break;
-    }
+    } 
 
     fs.readFile(filePath, function(error, content) {
         if (error) {
@@ -53,4 +53,4 @@ http.createServer(function (request, response) {
     });
 
 }).listen(process.env.PORT || 5000);
-console.log('Server running');
+console.log('Server running at port ' + process.env.PORT);
