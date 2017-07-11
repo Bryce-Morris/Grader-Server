@@ -1,8 +1,11 @@
 {
   "name": "nodejs-console-app1",
   "version": "0.0.0",
-  "description": "NodejsConsoleApp1",
+  "description": "Scantron grader server",
   "main": "index.js",
+"scripts": {
+    "start": "node index.js"
+  },
   "author": {
     "name": "Bryce Morris"},
   "engines": {
