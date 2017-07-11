@@ -2,10 +2,10 @@
   "name": "nodejs-console-app1",
   "version": "0.0.0",
   "description": "NodejsConsoleApp1",
-  "main": "app.js",
+  "main": "index.js",
   "author": {
-    "name": "Bryce"
-  },
+    "name": "Bryce Morris"},
+  "license": "All Rights Reserved"
   "engines": {
     "node": "=6.11.0",
     "npm": "=5.0.3"
