@@ -34,15 +34,15 @@ http.createServer( function(request, response) {
             console.log("Partial body: " + body);
 			response.end("DATA");
 		console.log("DATA");
-		response.end(data);
-		console.log(data);
+		response.end("data1"+data);
+		console.log("1data1"+data);
         });
         request.on('end', function () {
             console.log("Body: " + body);
         });
         response.writeHead(200, {'Content-Type': 'text/html'});
         response.end('post received\n');
-		response.end(request.body);
+		response.end("data2"+request.body);
 		console.log(request.body);
 		
     }
