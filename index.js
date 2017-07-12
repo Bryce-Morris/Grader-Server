@@ -2,18 +2,18 @@ var http = require('http');
 var fs = require('fs');
 var path = require('path');
 
-http.createServer( function(req, res) {
+http.createServer( function(request, res) {
 
-    console.dir(req.param);
+    console.dir(request.param);
 
-    if (req.method == 'POST') {
+    if (request.method == 'POST') {
         console.log("POST");
         var body = '';
-        req.on('data', function (data) {
+        request.on('data', function (data) {
             body += data;
             console.log("Partial body: " + body);
         });
-        req.on('end', function () {
+        request.on('end', function () {
             console.log("Body: " + body);
         });
         res.writeHead(200, {'Content-Type': 'text/html'});
