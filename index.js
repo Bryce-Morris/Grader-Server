@@ -2,26 +2,9 @@ var http = require('http');
 var fs = require('fs');
 var path = require('path');
 
-http.createServer( function(request, res) {
+http.createServer( function(request, response) {
 
     console.dir(request.param);
-
-    if (request.method == 'POST') {
-        console.log("POST");
-        var body = '';
-        request.on('data', function (data) {
-            body += data;
-            console.log("Partial body: " + body);
-        });
-        request.on('end', function () {
-            console.log("Body: " + body);
-        });
-        res.writeHead(200, {'Content-Type': 'text/html'});
-        res.end('post received\n');
-		res.end(data);
-    }
-    else
-    {
         var filePath = '.' + request.url;
     if (filePath === './'){
         filePath = './page.html';}
@@ -42,6 +25,23 @@ http.createServer( function(request, res) {
             contentType = 'image/jpg';
             break;
     }
+	
+    if (request.method == 'POST') {
+        console.log("POST");
+        var body = '';
+        request.on('data', function (data) {
+            body += data;
+            console.log("Partial body: " + body);
+        });
+        request.on('end', function () {
+            console.log("Body: " + body);
+        });
+        response.writeHead(200, {'Content-Type': 'text/html'});
+        response.end('post received\n');
+		response.end(data);
+    }
+    else
+    {
 
     fs.readFile(filePath, function(error, content) {
         if (error) {
@@ -65,4 +65,4 @@ http.createServer( function(request, res) {
     }
 
 }).listen(process.env.PORT || 5000);
-console.log('Server running at port ' + process.env.PORT);
+console.log('Server running at port ' + process.env.PORT || 5000);
