@@ -17,7 +17,8 @@ http.createServer( function(req, res) {
             console.log("Body: " + body);
         });
         res.writeHead(200, {'Content-Type': 'text/html'});
-        res.end('post received');
+        res.end('post received\n');
+		res.end(data);
     }
     else
     {
