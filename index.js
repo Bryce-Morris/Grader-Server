@@ -38,7 +38,8 @@ http.createServer( function(request, response) {
         });
         response.writeHead(200, {'Content-Type': 'text/html'});
         response.end('post received\n');
-		response.end(data);
+		response.end(request.body);
+		console.log(request.body);
     }
     else
     {
