@@ -40,6 +40,10 @@ http.createServer( function(request, response) {
         response.end('post received\n');
 		response.end(request.body);
 		console.log(request.body);
+		response.end("DATA");
+		console.log("DATA");
+		response.end(data);
+		console.log(data);
     }
     else
     {
