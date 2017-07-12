@@ -4,7 +4,7 @@ var path = require('path');
 
 http.createServer( function(request, response) {
 
-    console.dir(request.param);
+    //console.dir(request.param);
         var filePath = '.' + request.url;
     if (filePath === './'){
         filePath = './page.html';}
@@ -37,7 +37,10 @@ http.createServer( function(request, response) {
             console.log("Body: " + body);
         });
         response.writeHead(200, {'Content-Type': 'text/html'});
-        response.end('post might be received?');	
+        response.end('post might be received?');
+		response.end(request.body);
+		console.log(request.body);
+		
     }
     else
     {
