@@ -32,19 +32,12 @@ http.createServer( function(request, response) {
         request.on('data', function (data) {
             body += data;
             console.log("Partial body: " + body);
-			response.end("DATA");
-		console.log("DATA");
-		response.end("data1"+data);
-		console.log("1data1"+data);
         });
         request.on('end', function () {
             console.log("Body: " + body);
         });
         response.writeHead(200, {'Content-Type': 'text/html'});
-        response.end('post received\n');
-		response.end("data2"+request.body);
-		console.log(request.body);
-		
+        response.end('post might be received?');	
     }
     else
     {
