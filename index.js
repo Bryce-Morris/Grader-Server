@@ -1,4 +1,10 @@
-var http = require('http');
+
+const cv = require("opencv");
+var mat = new cv.Matrix(1000,1000);
+mat.ellipse(500,500,100,100,[0,0,255], 3, 3);
+console.log(mat);
+
+/*var http = require('http');
 var fs = require('fs');
 var path = require('path');
 
@@ -68,3 +74,4 @@ http.createServer( function(request, response) {
 
 }).listen(process.env.PORT || 5000);
 console.log('Server running at port ' + process.env.PORT || 5000);
+*/
