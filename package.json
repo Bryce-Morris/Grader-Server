@@ -3,16 +3,24 @@
   "version": "0.0.0",
   "description": "Scantron grader server",
   "main": "index.js",
-"scripts": {
+  "scripts": {
     "start": "node index.js"
   },
   "author": {
-    "name": "Bryce Morris"},
+    "name": "Bryce Morris"
+  },
   "engines": {
     "node": "=6.11.0",
     "npm": "=5.0.3"
   },
   "devDependencies": {
     "opencv": "^4.0.0"
+  },
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "minimist": "^1.2.0",
+    "nforce": "^1.7.0",
+    "path": "^0.12.7",
+    "xmlhttprequest": "^1.8.0"
   }
 }

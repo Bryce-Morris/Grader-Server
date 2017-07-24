@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <root>
+        <rootURL>http://mogulsocial.com/</rootURL>
+        <toBrowse/>
+        <browsed>
+            <url_data uri="http://mogulsocial.com/">
+                <header name="status" value="301"/>
+                <header name="content-length" value="193"/>
+                <header name="server" value="nginx/1.4.6 (Ubuntu)"/>
+                <header name="connection" value="keep-alive"/>
+                <header name="location" value="https://mogulsocial.com/"/>
+                <header name="date" value="Tue, 18 Jul 2017 18:30:18 GMT"/>
+                <header name="content-type" value="text/html"/>
+                <header name="link_encoding" value=""/>
+            </url_data>
+        </browsed>
+        <forms/>
+        <uploads/>
+    </root>

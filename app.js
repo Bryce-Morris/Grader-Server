@@ -3,10 +3,16 @@ const cv = require("opencv");
 
 var argv = require('minimist')(process.argv.slice(2));
 
+const nforce = require('nforce');
+
+const fs     = require('fs');
+const path   = require('path');
+
 var imagename = argv.i;
 var randkey = argv.k;
 
 cv.readImage('./images/input/' + imagename , function (err, img) {
+
     if (err) { throw err; }
 
     var Letters = ['A', 'B', 'C', 'D', 'E'];
@@ -23,7 +29,6 @@ cv.readImage('./images/input/' + imagename , function (err, img) {
 });
 
 
-
 function gradeScantron(key, img) {
     process.on('uncaughtException', function (err) {
         console.log('Caught exception: ' + err);
@@ -35,6 +40,8 @@ function gradeScantron(key, img) {
     const BLACK = [0, 0, 0];
     const COLORS = [RED, [0, 204, 255], [0, 255, 102], [255, 68, 0], [193, 0, 132]];
     var ANSWER_KEY = key;
+
+    var images = [];
 
     console.log('~~~~~~~~~~~~~~' + imagename + '~~~~~~~~~~~~~~');
     var width = img.width();
@@ -51,6 +58,7 @@ function gradeScantron(key, img) {
         width = img.width();
         height = img.height();
         img.save('./images/' + imagename + '_rotated.jpg');
+        images.push(path.resolve(__dirname, './images/' + imagename + '_rotated.jpg'));
     }
     
 
@@ -67,6 +75,7 @@ function gradeScantron(key, img) {
     startcontours.drawAllContours(contours, WHITE);
     
     startcontours.save('./images/' + imagename + '_a.jpg');//first contours
+    images.push(path.resolve(__dirname, './images/' + imagename + '_a.jpg'));
 
 
     let minAreaPercent = 0.2;
@@ -87,6 +96,8 @@ function gradeScantron(key, img) {
     let hshdhd = contours.boundingRect(largestAreaIndex);
     largestcontour.rectangle([hshdhd.x, hshdhd.y], [hshdhd.width, hshdhd.height], RED, 1, 2);
     largestcontour.save('./images/' + imagename + '_b.jpg');// largest contour
+    images.push(path.resolve(__dirname, './images/' + imagename + '_b.jpg'));
+
 
     let arcLength = contours.arcLength(largestAreaIndex, true);
     contours.approxPolyDP(largestAreaIndex, arcLength * 0.05, true);
@@ -102,6 +113,8 @@ function gradeScantron(key, img) {
     startcontours.ellipse(points[2].x, points[2].y, 20, 20, RED, 3, 3);
     startcontours.ellipse(points[3].x, points[3].y, 20, 20, RED, 3, 3);
     startcontours.save('./images/' + imagename + '_rect.jpg');
+    images.push(path.resolve(__dirname, './images/' + imagename + '_rect.jpg'));
+
     //sort points
     var pointssrt = [{}, {}, {}, {}];
     for (var p = 0; p < 4; p++) {
@@ -128,6 +141,7 @@ function gradeScantron(key, img) {
     img.warpPerspective(xfrmMat, 0, 0, WHITE);
     img.resize(2178, 1614);
     img.save('./images/' + imagename + '_flat.jpg');
+    images.push(path.resolve(__dirname, './images/' + imagename + '_flat.jpg'));
    
 
 
@@ -147,6 +161,7 @@ function gradeScantron(key, img) {
     th.erode(1);
     //th.dilate(0.5);
     th.save('./images/' + imagename + '_c.jpg');//canny
+    images.push(path.resolve(__dirname, './images/' + imagename + '_c.jpg'));
 
     
     //Rotate image so info box is on the left
@@ -178,6 +193,7 @@ function gradeScantron(key, img) {
 
 
     secondCtn.save('./images/' + imagename + '_second.jpg');
+    images.push(path.resolve(__dirname, './images/' + imagename + '_second.jpg'));
     
 
 
@@ -209,8 +225,10 @@ function gradeScantron(key, img) {
         }
     }
     failedcontours.save('./images/' + imagename + '_d.jpg');//failedContours
+    images.push(path.resolve(__dirname, './images/' + imagename + '_d.jpg'));
 
     contourimg.save('./images/' + imagename + '_e.jpg');//contours
+    images.push(path.resolve(__dirname, './images/' + imagename + '_d.jpg'));
     
     for (var t = 0; t < contours.size(); t++) {
         rect = contours.boundingRect(t);
@@ -225,6 +243,7 @@ function gradeScantron(key, img) {
     //failedcontours.save('./images/' + imagename + '_failedContours.jpg');
 
     bubbleSheet.save('./images/' + imagename + '_f.jpg');//flat
+    images.push(path.resolve(__dirname, './images/' + imagename + '_f.jpg'));
 
     var bubbles2 = [];
 
@@ -238,6 +257,8 @@ function gradeScantron(key, img) {
         blank.ellipse(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width / 2, rect.height / 2, WHITE, 3, 6);
     }
     blank.save('./images/' + imagename + '_g.jpg');//prefill
+    images.push(path.resolve(__dirname, './images/' + imagename + '_g.jpg'));
+
     blank.erode(1);
     blank.floodFill({
         seedPoint: [50, 50],
@@ -247,6 +268,8 @@ function gradeScantron(key, img) {
         upDiff: [10, 100, 70]
     });
     blank.save('./images/' + imagename + '_h.jpg');//bubblesMask
+    images.push(path.resolve(__dirname, './images/' + imagename + '_h.jpg'));
+
     blank.dilate(1);
 
     var final = blank.copy();
@@ -258,10 +281,13 @@ function gradeScantron(key, img) {
 
     //final.erode(3);
     final.save('./images/' + imagename + '_i.jpg');//prepick
+    images.push(path.resolve(__dirname, './images/' + imagename + '_i.jpg'));
+
     var newcontours = final.findContours();
     var blank2 = new cv.Matrix(1614, 2178, cv.Constants.CV_8UC1);
     blank2.drawAllContours(newcontours,WHITE);
     blank2.save('./images/' + imagename + '_j.jpg');//foundbubbles
+    images.push(path.resolve(__dirname, './images/' + imagename + '_j.jpg'));
     
 
     var s = newcontours.size();
@@ -286,6 +312,7 @@ function gradeScantron(key, img) {
         }
     }
     blank4.save('./images/' + imagename + '_k.jpg');//numberedcontours
+    images.push(path.resolve(__dirname, './images/' + imagename + '_k.jpg'));
 
     BUBBLE_SORTED.sort(function (a, b) { return a.x - b.x; });
     var bubblesL = BUBBLE_SORTED.length;
@@ -338,6 +365,8 @@ function gradeScantron(key, img) {
         }
     }
     img3.save('./images/' + imagename + '_l.jpg');//bubblesMask_1
+    images.push(path.resolve(__dirname, './images/' + imagename + '_l.jpg'));
+
     //lookupImage.cvtColor('CV_BGR2GRAY');
     
     lookupImage.threshold(0, 150, "Binary Inverted", "Otsu");
@@ -345,6 +374,8 @@ function gradeScantron(key, img) {
 
     //lookupImage.inRange([0, 0, 0], [160, 160, 160]);
     lookupImage.save('./images/' + imagename + '_m.jpg');//lookup
+    images.push(path.resolve(__dirname, './images/' + imagename + '_m.jpg'));
+
     var GRADED = [];
     var total;
     var count = 0;
@@ -392,6 +423,8 @@ function gradeScantron(key, img) {
         }
 
         lookupImage.save('./images/' + imagename + '_n.jpg');//lookupRect
+        images.push(path.resolve(__dirname, './images/' + imagename + '_n.jpg'));
+
         var biggest = 0;
         var biggestindex;
         for (let v = 0; v < 5; v++) {
@@ -441,6 +474,68 @@ function gradeScantron(key, img) {
     graded.putText("Key: " + ANSWER_KEY, 300, 1520, "HERSEY_PLAIN", BLACK, 3, 4);
 
     graded.save('./images/output/' + imagename + '_graded.jpg');
+    images.push(path.resolve(__dirname, './images/output/' + imagename + '_graded.jpg'));
     console.log("Done.");
+
+
+    var upload_data = {
+        "Name": "demoAttachment.pdf",
+        "Body": "Base64Encoded Attachment",
+        "parentId": "0016A0000000u7VQ"
+    };
+
+    /*
+        vandelayeducation.my.salesforce.com
+        spencerince@gmail.com
+        Txcats6552
+     */
+
+    /*
+        3MVG9CEn_O3jvv0y8c1EjQZsuQmk.QhkosivnDto6Ta.q1hIHyxoexchUrOPQQ7EIwz7hZ6nSub9ONEFUxwV1
+        3233825968116083
+     */
+
+
+    var sfuser = 'spencerince@gmail.com';
+    var sfpass = 'Txcats6552';
+
+    var org = nforce.createConnection({
+        clientId: '3MVG9CEn_O3jvv0y8c1EjQZsuQmk.QhkosivnDto6Ta.q1hIHyxoexchUrOPQQ7EIwz7hZ6nSub9ONEFUxwV1',
+        clientSecret: '3233825968116083',
+        redirectUri: 'http://localhost:3000/'
+    });
+
+
+    org.authenticate({ username: sfuser, password: sfpass}, function(err, oauth) {
+        if(err) {
+            console.error('unable to authenticate to sfdc');
+        } else {
+            for (var idx = 0; idx < images.length; idx++) {
+                var filePath = images[idx];
+                var fileName = filePath.substr(filePath.lastIndexOf("/") + 1);
+
+                var image = nforce.createSObject('Document', {
+                    Name: 'testimage',
+                    Description: 'This is a image',
+                    FolderId: '0Ci6A000000fxqc',
+                    Type: 'jpg',
+                    attachment: {
+                        fileName: fileName,
+                        body: fs.readFileSync(filePath)
+                    }
+                });
+
+                org.insert({ sobject: image, oauth: oauth }, function(err, resp) {
+                    if(err) {
+                        return console.error(err);
+                    } else {
+                        return console.log(resp);
+                    }
+                });
+            }
+        }
+    });
+
+
     return score;
 }
