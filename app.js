@@ -7,6 +7,24 @@ const nforce = require('nforce');
 
 const fs     = require('fs');
 const path   = require('path');
+const promiseForeach = require('promise-foreach');
+
+const sf = require('node-salesforce');
+const JSFtp = require("jsftp");
+
+const sfuser = 'spencerince@gmail.com';
+const sfpass = 'Txcats6553';
+
+const clientId = '3MVG9CEn_O3jvv0y8c1EjQZsuQmk.QhkosivnDto6Ta.q1hIHyxoexchUrOPQQ7EIwz7hZ6nSub9ONEFUxwV1';
+const clientSecret = '3233825968116083';
+const redirectUri = 'http://localhost:3000/';
+
+const ftp_options = {
+    host: "ec2-34-227-46-233.compute-1.amazonaws.com",
+    port: 21,
+    user: 'thomas',
+    pass: 'thomas11111'
+};
 
 var imagename = argv.i;
 var randkey = argv.k;
@@ -477,47 +495,37 @@ function gradeScantron(key, img) {
     images.push(path.resolve(__dirname, './images/output/' + imagename + '_graded.jpg'));
     console.log("Done.");
 
+    //uploadImagesToSalesforce(images);
+    //deleteImagesFromSalesforce();
+    //downloadImagesFromSalesforce();
+    uploadFiles();
 
-    var upload_data = {
-        "Name": "demoAttachment.pdf",
-        "Body": "Base64Encoded Attachment",
-        "parentId": "0016A0000000u7VQ"
-    };
+    return score;
+}
 
-    /*
-        vandelayeducation.my.salesforce.com
-        spencerince@gmail.com
-        Txcats6552
-     */
-
-    /*
-        3MVG9CEn_O3jvv0y8c1EjQZsuQmk.QhkosivnDto6Ta.q1hIHyxoexchUrOPQQ7EIwz7hZ6nSub9ONEFUxwV1
-        3233825968116083
-     */
-
-
-    var sfuser = 'spencerince@gmail.com';
-    var sfpass = 'Txcats6552';
-
+function uploadImagesToSalesforce(images) {
     var org = nforce.createConnection({
-        clientId: '3MVG9CEn_O3jvv0y8c1EjQZsuQmk.QhkosivnDto6Ta.q1hIHyxoexchUrOPQQ7EIwz7hZ6nSub9ONEFUxwV1',
-        clientSecret: '3233825968116083',
-        redirectUri: 'http://localhost:3000/'
+        clientId: clientId,
+        clientSecret: clientSecret,
+        redirectUri: redirectUri
     });
+
+    var ids = [];
 
 
     org.authenticate({ username: sfuser, password: sfpass}, function(err, oauth) {
         if(err) {
             console.error('unable to authenticate to sfdc');
         } else {
+            /* upload */
             for (var idx = 0; idx < images.length; idx++) {
                 var filePath = images[idx];
                 var fileName = filePath.substr(filePath.lastIndexOf("/") + 1);
 
                 var image = nforce.createSObject('Document', {
-                    Name: 'testimage',
+                    Name: fileName,
                     Description: 'This is a image',
-                    FolderId: '0Ci6A000000fxqc',
+                    FolderId: '0056A000000gjeA',
                     Type: 'jpg',
                     attachment: {
                         fileName: fileName,
@@ -535,7 +543,137 @@ function gradeScantron(key, img) {
             }
         }
     });
+}
+
+function deleteImagesFromSalesforce() {
+    var conn = new sf.Connection({
+        oauth2: {
+            clientId: clientId,
+            clientSecret: clientSecret,
+            redirectUri: redirectUri
+        }
+    });
 
 
-    return score;
+    conn.login(sfuser, sfpass, function(err, userInfo) {
+        if (err) {
+            console.error('unable to authenticate to sfdc');
+        }
+
+        /* delete */
+        var q = 'SELECT Id, Name, Description, Type FROM Document WHERE Description LIKE \'This is a image\'';
+        var docs = [];
+
+        var promise =  new Promise((resolve, reject) => {
+            conn.query(q, function(err, result) {
+                if (err) { reject(err); }
+
+                resolve(result.records);
+
+            });
+        });
+
+
+        promise.then((docs) => {
+            var ids = [];
+
+            docs.forEach(function(doc) {
+                ids.push(doc.Id);
+            });
+
+            return ids;
+        }).then((ids) => {
+            for (var i = 0; i < ids.length; i++) {
+                conn.sobject("Document").destroy(ids[i], function(err, ret) {
+                    if (err || !ret.success) {
+                        return console.error(err, ret);
+                    }
+
+                    console.log('Deleted Successfully : ' + ret.id);
+                });
+            }
+        });
+    });
+}
+
+function downloadImagesFromSalesforce() {
+    var org = nforce.createConnection({
+        clientId: clientId,
+        clientSecret: clientSecret,
+        redirectUri: redirectUri
+    });
+
+    var ids = [];
+
+
+    org.authenticate({ username: sfuser, password: sfpass}, function(err, oauth) {
+        if (err) {
+            console.error('unable to authenticate to sfdc');
+        } else {
+            /* download */
+            var q = 'SELECT Id, Name, Description, Type FROM Document WHERE Description LIKE \'This is a image\'';
+            var docs = [];
+
+            var promise = new Promise((resolve, reject) => {
+                org.query({oauth: oauth, query: q}, function (err, result) {
+                    if (err) {
+                        reject(err);
+                    }
+
+                    resolve(result.records);
+
+                });
+            });
+
+            promise.then((docs) => {
+
+                docs.forEach(function (doc) {
+                    org.getDocumentBody({oauth: oauth, id: doc._fields.id}, function (err, resp) {
+                        var wstream = fs.createWriteStream(
+                            path.resolve(__dirname, './images/downloads/' + doc._fields.name));
+
+                        wstream.write(resp);
+                        console.log('Saved file : ' + path.resolve(__dirname, './images/downloads/' + doc._fields.name));
+                        wstream.end();
+                    });
+                });
+            });
+        }
+    });
+}
+
+function uploadFiles() {
+    var Ftp = new JSFtp(ftp_options);
+
+    var downloads_path = path.resolve(__dirname, './images/downloads/');
+
+    Ftp.auth(ftp_options.user, ftp_options.pass, function(err, resp) {
+        if (err) { console.error(err); }
+
+        fs.readdir(downloads_path, (err, files) => {
+            files.forEach(file => {
+                var file_path = downloads_path + '/' + file;
+
+                var promise = new Promise((resolve, reject) => {
+                    fs.readFile(file_path, function (err, data) {
+                        if (err) reject(err);
+                        resolve(data);
+                    });
+                });
+
+                promise.then((buffer) => {
+                    Ftp.put(buffer, '/home/thomas/uploads/' + file, function(hadError) {
+                        if (!hadError)
+                            console.log("File transferred successfully!");
+                    });
+                }).catch((error) => {
+
+                });
+
+
+            });
+        });
+    });
+
+
 }

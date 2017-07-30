@@ -18,9 +18,12 @@
   },
   "dependencies": {
     "fs": "0.0.1-security",
+    "jsftp": "^2.0.0",
     "minimist": "^1.2.0",
     "nforce": "^1.7.0",
+    "node-salesforce": "^0.8.0",
     "path": "^0.12.7",
+    "promise-foreach": "^1.0.20",
     "xmlhttprequest": "^1.8.0"
   }
 }
