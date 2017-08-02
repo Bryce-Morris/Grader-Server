@@ -17,11 +17,14 @@
     "opencv": "^4.0.0"
   },
   "dependencies": {
+    "async": "^2.5.0",
+    "bluebird": "^3.5.0",
     "fs": "0.0.1-security",
     "jsftp": "^2.0.0",
     "minimist": "^1.2.0",
     "nforce": "^1.7.0",
     "node-salesforce": "^0.8.0",
+    "node-ssh": "^4.2.3",
     "path": "^0.12.7",
     "promise-foreach": "^1.0.20",
     "xmlhttprequest": "^1.8.0"

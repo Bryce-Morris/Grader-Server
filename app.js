@@ -7,10 +7,12 @@ const nforce = require('nforce');
 
 const fs     = require('fs');
 const path   = require('path');
-const promiseForeach = require('promise-foreach');
+const async = require('async');
 
 const sf = require('node-salesforce');
 const JSFtp = require("jsftp");
+
+const node_ssh = require('node-ssh');
 
 const sfuser = 'spencerince@gmail.com';
 const sfpass = 'Txcats6553';
@@ -22,8 +24,9 @@ const redirectUri = 'http://localhost:3000/';
 const ftp_options = {
     host: "ec2-34-227-46-233.compute-1.amazonaws.com",
     port: 21,
-    user: 'thomas',
-    pass: 'thomas11111'
+    user: 'ubuntu',
+    pass: 'ubuntu11111',
+    privateKey: '/home/pokeman/Workspaces/thomas_work/node-aws.pem'
 };
 
 var imagename = argv.i;
@@ -647,33 +650,61 @@ function uploadFiles() {
 
     var downloads_path = path.resolve(__dirname, './images/downloads/');
 
-    Ftp.auth(ftp_options.user, ftp_options.pass, function(err, resp) {
-        if (err) { console.error(err); }
 
+    var ssh = new node_ssh();
+
+    ssh.connect({
+        host: ftp_options.host,
+        username: ftp_options.user,
+        privateKey: ftp_options.privateKey
+    }).then(function() {
         fs.readdir(downloads_path, (err, files) => {
-            files.forEach(file => {
+            async.eachSeries(files, (file, callback) => {
                 var file_path = downloads_path + '/' + file;
 
-                var promise = new Promise((resolve, reject) => {
-                    fs.readFile(file_path, function (err, data) {
-                        if (err) reject(err);
-                        resolve(data);
-                    });
+                console.log(file);
+
+                ssh.putFile(file_path, '/home/ubuntu/ftp/files/' + file).then(function() {
+                    console.log("The File thing is done");
+                    callback();
+                }, function(error) {
+                    console.log("Something's wrong");
+                    console.log(error);
                 });
-
-                promise.then((buffer) => {
-                    Ftp.put(buffer, '/home/thomas/uploads/' + file, function(hadError) {
-                        if (!hadError)
-                            console.log("File transferred successfully!");
-                    });
-                }).catch((error) => {
-
-                });
-
 
             });
         });
+
     });
+
+
+    // Ftp.auth(ftp_options.user, ftp_options.pass, function(err, resp) {
+    //     if (err) { console.error(err); }
+    //
+    //
+    //     fs.readdir(downloads_path, (err, files) => {
+    //         async.each(files, (file, callback) => {
+    //             var file_path = downloads_path + '/' + file;
+    //
+    //             var promise = new Promise((resolve, reject) => {
+    //                 fs.readFile(file_path, function (err, data) {
+    //                     if (err) reject(err);
+    //                     resolve(data);
+    //                 });
+    //             });
+    //
+    //             promise.then((buffer) => {
+    //                 console.log(file);
+    //                 Ftp.put(buffer, '/uploads/' + file, function(hadError) {
+    //                     if (!hadError) {
+    //                         console.log("File transferred successfully!");
+    //                         callback();
+    //                     }
+    //                 });
+    //             });
+    //         });
+    //     });
+    // });
 
 
 }
